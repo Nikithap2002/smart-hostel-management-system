@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h1>Welcome, Admin!</h1>
+    <p>Here you can manage hostel complaints.</p>
+
+    <h2>All Complaints</h2>
+    <ul id="complaint-list"></ul>
+
+    <script>
+        // Fetch and display complaints
+        fetch('http://127.0.0.1:5000/complaints')
+        .then(response => response.json())
+        .then(data => {
+            const list = document.getElementById('complaint-list');
+            data.forEach(complaint => {
+                const li = document.createElement('li');
+                li.textContent = `Complaint by ${complaint.username}: ${complaint.description} (Status: ${complaint.status})`;
+                list.appendChild(li);
+            });
+        });
+    </script>
+</body>
+</html>

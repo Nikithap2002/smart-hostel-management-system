@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Hostel System - Home</title>
+</head>
+<body>
+    <h1>Smart Hostel Management System</h1>
+
+    <h2>Admin Login</h2>
+    <form id="admin-login-form">
+        Username: <input type="text" id="admin-username"><br>
+        Password: <input type="password" id="admin-password"><br>
+        <button type="submit">Login as Admin</button>
+    </form>
+
+    <h2>Student Register/Login</h2>
+    <form id="student-login-form">
+        Username: <input type="text" id="student-username"><br>
+        Password: <input type="password" id="student-password"><br>
+        <button type="submit">Register/Login as Student</button>
+    </form>
+
+    <script>
+        // Admin Login
+        document.getElementById('admin-login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const username = document.getElementById('admin-username').value;
+    const password = document.getElementById('admin-password').value;
+
+    fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (response.ok && data.role === 'admin') {
+            alert('Admin Login Successful!');
+            window.location.href = "/admin";
+        } else {
+            alert('Admin Login Failed!');
+        }
+    });
+});
+
+
+        // Student Register/Login
+        document.getElementById('student-login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const username = document.getElementById('student-username').value;
+    const password = document.getElementById('student-password').value;
+
+    fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    })
+    .then(response => {
+        if (response.ok) {
+            alert('Student Registered Successfully! Logging In...');
+            window.location.href = "/student";
+        } else {
+            // Already exists, try login
+            fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(async (response) => {
+                const data = await response.json();
+                if (response.ok && data.role === 'student') {
+                    alert('Student Login Successful!');
+                    window.location.href = "/student";
+                } else {
+                    alert('Login Failed!');
+                }
+            });
+        }
+    });
+});
+
+    </script>
+</body>
+</html>

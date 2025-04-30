@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Dashboard</title>
+</head>
+<body>
+    <h1>Welcome, Student!</h1>
+
+    <h2>Available Rooms</h2>
+    <ul id="room-list"></ul>
+
+    <h2>Pay Hostel Fee</h2>
+    <form id="payment-form">
+        Amount: <input type="number" id="fee-amount"><br>
+        <button type="submit">Pay Fee</button>
+    </form>
+
+    <h2>File a Complaint</h2>
+    <form id="complaint-form">
+        Description: <input type="text" id="complaint-description"><br>
+        <button type="submit">Submit Complaint</button>
+    </form>
+
+    <script>
+        let loggedInUserId = 1; // **For now hardcoded**. Later you can manage session!
+
+        // Fetch available rooms
+        fetch('http://127.0.0.1:5000/rooms')
+        .then(response => response.json())
+        .then(data => {
+            const list = document.getElementById('room-list');
+            data.forEach(room => {
+                const li = document.createElement('li');
+                li.textContent = `Room Number: ${room[1]}, Available Slots: ${room[2]}`;
+                list.appendChild(li);
+            });
+        });
+
+        // Pay Fee
+        document.getElementById('payment-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const amount = document.getElementById('fee-amount').value;
+
+            fetch('http://127.0.0.1:5000/pay-fee', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: loggedInUserId, amount })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            });
+        });
+
+        // File Complaint
+        document.getElementById('complaint-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const description = document.getElementById('complaint-description').value;
+
+            fetch('http://127.0.0.1:5000/complaints', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: loggedInUserId, description })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            });
+        });
+    </script>
+</body>
+</html>
