@@ -1,73 +1,144 @@
+student.html
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Student Dashboard</title>
+  <meta charset="UTF-8" />
+  <title>Student Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f8fa;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #2d98da;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    main {
+      padding: 2rem;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h2 {
+      color: #2c3e50;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 0.3rem;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background: white;
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    form {
+      margin-top: 1rem;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    input, button {
+      padding: 0.6rem;
+      margin: 0.5rem 0;
+      width: 100%;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #2d98da;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #2274b8;
+    }
+  </style>
 </head>
 <body>
+  <header>
     <h1>Welcome, Student!</h1>
+  </header>
 
+  <main>
     <h2>Available Rooms</h2>
     <ul id="room-list"></ul>
 
     <h2>Pay Hostel Fee</h2>
     <form id="payment-form">
-        Amount: <input type="number" id="fee-amount"><br>
-        <button type="submit">Pay Fee</button>
+      <input type="number" id="fee-amount" placeholder="Enter fee amount" required />
+      <button type="submit">Pay Fee</button>
     </form>
 
     <h2>File a Complaint</h2>
     <form id="complaint-form">
-        Description: <input type="text" id="complaint-description"><br>
-        <button type="submit">Submit Complaint</button>
+      <input type="text" id="complaint-description" placeholder="Describe your issue..." required />
+      <button type="submit">Submit Complaint</button>
     </form>
+  </main>
 
-    <script>
-        let loggedInUserId = 1; // **For now hardcoded**. Later you can manage session!
+  <script>
+    let loggedInUserId = 1;
 
-        // Fetch available rooms
-        fetch('http://127.0.0.1:5000/rooms')
-        .then(response => response.json())
-        .then(data => {
-            const list = document.getElementById('room-list');
-            data.forEach(room => {
-                const li = document.createElement('li');
-                li.textContent = `Room Number: ${room[1]}, Available Slots: ${room[2]}`;
-                list.appendChild(li);
-            });
+    fetch('/rooms')
+      .then(response => response.json())
+      .then(data => {
+        const list = document.getElementById('room-list');
+        data.forEach(room => {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>Room:</strong> ${room.room_number} — 
+            <span style="color: ${room.is_available ? 'green' : 'red'};">
+              ${room.is_available ? 'Available' : 'Occupied'}
+            </span>`;
+          list.appendChild(li);
         });
+      });
 
-        // Pay Fee
-        document.getElementById('payment-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const amount = document.getElementById('fee-amount').value;
+    document.getElementById('payment-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const amount = document.getElementById('fee-amount').value;
+      fetch('/pay-fee', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: loggedInUserId, amount })
+      })
+      .then(response => response.json())
+      .then(data => alert(data.message));
+    });
 
-            fetch('http://127.0.0.1:5000/pay-fee', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: loggedInUserId, amount })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-            });
-        });
-
-        // File Complaint
-        document.getElementById('complaint-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const description = document.getElementById('complaint-description').value;
-
-            fetch('http://127.0.0.1:5000/complaints', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: loggedInUserId, description })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-            });
-        });
-    </script>
+    document.getElementById('complaint-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const description = document.getElementById('complaint-description').value;
+      fetch('/complaints', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: loggedInUserId, description })
+      })
+      .then(response => response.json())
+      .then(data => alert(data.message));
+    });
+  </script>
 </body>
 </html>
