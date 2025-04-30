@@ -1,28 +1,87 @@
+admin.html
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #34495e;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    main {
+      padding: 2rem;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h2 {
+      color: #2c3e50;
+    }
+
+    .complaint-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      padding: 1rem 1.5rem;
+      margin-bottom: 1rem;
+      transition: transform 0.2s ease;
+    }
+
+    .complaint-card:hover {
+      transform: scale(1.01);
+    }
+
+    .status {
+      font-weight: bold;
+      color: #27ae60;
+    }
+
+    .status.pending {
+      color: #e67e22;
+    }
+  </style>
 </head>
 <body>
-    <h1>Welcome, Admin!</h1>
-    <p>Here you can manage hostel complaints.</p>
+  <header>
+    <h1>Welcome, Admin</h1>
+    <p>Manage hostel complaints here</p>
+  </header>
 
+  <main>
     <h2>All Complaints</h2>
-    <ul id="complaint-list"></ul>
+    <div id="complaint-list"></div>
+  </main>
 
-    <script>
-        // Fetch and display complaints
-        fetch('http://127.0.0.1:5000/complaints')
-        .then(response => response.json())
-        .then(data => {
-            const list = document.getElementById('complaint-list');
-            data.forEach(complaint => {
-                const li = document.createElement('li');
-                li.textContent = `Complaint by ${complaint.username}: ${complaint.description} (Status: ${complaint.status})`;
-                list.appendChild(li);
-            });
+  <script>
+    fetch('/complaints')
+      .then(response => response.json())
+      .then(data => {
+        const list = document.getElementById('complaint-list');
+        data.forEach(complaint => {
+          const card = document.createElement('div');
+          card.className = 'complaint-card';
+          card.innerHTML = `
+            <strong>User:</strong> ${complaint.username}<br>
+            <strong>Description:</strong> ${complaint.description}<br>
+            <strong>Status:</strong> <span class="status ${complaint.status.toLowerCase()}">${complaint.status}</span>
+          `;
+          list.appendChild(card);
         });
-    </script>
+      });
+  </script>
 </body>
 </html>
