@@ -1,84 +1,135 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Admin Dashboard</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f9f9f9;
+      font-family: Arial, sans-serif;
+      background: url('https://images.unsplash.com/photo-1570129477492-45c003edd2be') no-repeat center center fixed;
+      background-size: cover;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
       margin: 0;
-      padding: 0;
     }
 
-    header {
-      background-color: #34495e;
-      color: white;
-      padding: 1rem;
-      text-align: center;
+    h1, h2 {
+      color: #fff;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
     }
 
-    main {
-      padding: 2rem;
-      max-width: 900px;
-      margin: auto;
-    }
-
-    h2 {
-      color: #2c3e50;
-    }
-
-    .complaint-card {
-      background: white;
+    ul {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-      padding: 1rem 1.5rem;
-      margin-bottom: 1rem;
-      transition: transform 0.2s ease;
+      width: 550px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
 
-    .complaint-card:hover {
-      transform: scale(1.01);
+    li {
+      padding: 15px;
+      margin-bottom: 20px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
-    .status {
+    .status-section {
+      margin-top: 10px;
+    }
+
+    select, button {
+      padding: 6px 10px;
+      margin-top: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      margin-right: 10px;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      cursor: pointer;
       font-weight: bold;
-      color: #27ae60;
     }
 
-    .status.pending {
-      color: #e67e22;
+    button:hover {
+      background-color: #2980b9;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Welcome, Admin</h1>
-    <p>Manage hostel complaints here</p>
-  </header>
+  <h1>Welcome, Admin!</h1>
+  <p style="color:white; text-shadow: 1px 1px 2px black;">Here you can manage hostel complaints.</p>
 
-  <main>
-    <h2>All Complaints</h2>
-    <div id="complaint-list"></div>
-  </main>
+  <h2>All Complaints</h2>
+  <ul id="complaint-list">
+    <li>Loading complaints...</li>
+  </ul>
 
   <script>
     fetch('/complaints')
       .then(response => response.json())
       .then(data => {
         const list = document.getElementById('complaint-list');
+        list.innerHTML = '';
+
+        if (data.length === 0) {
+          list.innerHTML = '<li>No complaints yet.</li>';
+          return;
+        }
+
         data.forEach(complaint => {
-          const card = document.createElement('div');
-          card.className = 'complaint-card';
-          card.innerHTML = `
-            <strong>User:</strong> ${complaint.username}<br>
-            <strong>Description:</strong> ${complaint.description}<br>
-            <strong>Status:</strong> <span class="status ${complaint.status.toLowerCase()}">${complaint.status}</span>
+          const li = document.createElement('li');
+          li.setAttribute('data-id', complaint.complaint_id);
+          const selectId = `status-${complaint.complaint_id}`;
+
+          li.innerHTML = `
+            <strong>${complaint.username}</strong> — ${complaint.description} <br>
+            <em>Status:</em> ${complaint.status} &nbsp; | &nbsp;
+            <em>Date:</em> ${complaint.date_filed}
+            <div class="status-section">
+              <label for="${selectId}">Change status:</label>
+              <select id="${selectId}">
+                <option value="Pending" ${complaint.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="Approved" ${complaint.status === 'Approved' ? 'selected' : ''}>Approved</option>
+              </select>
+              <button onclick="updateStatus(${complaint.complaint_id}, '${selectId}')">Submit</button>
+            </div>
           `;
-          list.appendChild(card);
+          list.appendChild(li);
         });
+      })
+      .catch(error => {
+        console.error('Error fetching complaints:', error);
+        document.getElementById('complaint-list').innerHTML = '<li>Error loading complaints.</li>';
       });
+
+    function updateStatus(id, selectId) {
+      const newStatus = document.getElementById(selectId).value;
+
+      fetch('/update-complaint-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ complaint_id: id, status: newStatus })
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert(data.message);
+
+        if (newStatus === 'Approved') {
+          const item = document.querySelector(`li[data-id='${id}']`);
+          if (item) item.remove(); // Remove from UI
+        }
+      })
+      .catch(err => {
+        alert("Failed to update status.");
+        console.error(err);
+      });
+    }
   </script>
 </body>
 </html>

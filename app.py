@@ -112,6 +112,28 @@ def view_complaints():
     complaint_list = [dict(row) for row in complaints]
     return jsonify(complaint_list)
 
+# ------------------- Update Complaint Status (Admin) -------------------
+@app.route('/update-complaint-status', methods=['POST'])
+def update_complaint_status():
+    data = request.json
+    complaint_id = data['complaint_id']
+    new_status = data['status']
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    if new_status == "Approved":
+        cursor.execute("DELETE FROM complaints WHERE complaint_id = ?", (complaint_id,))
+        message = "Complaint processed and removed."
+    else:
+        cursor.execute("UPDATE complaints SET status = ? WHERE complaint_id = ?", (new_status, complaint_id))
+        message = "Status updated."
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": message})
+
 # ------------------- Main -------------------
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
