@@ -1,3 +1,17 @@
+Project Structure
+
+smart-hostel-management-system/
+│
+├── admin/                 # Admin dashboard HTML + JS
+├── student/               # Student dashboard HTML + JS
+├── payments.php           # Mock endpoint to return fee payment data
+├── complaints.php         # Endpoint to get/post complaints
+├── update-complaint-status.php
+├── db/                    # SQL scripts and DB schema
+├── assets/                # Background images, CSS
+├── README.md              # You are here
+
+
 # smart-hostel-management-system how to run 
 
 Prerequisites
