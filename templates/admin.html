@@ -63,14 +63,22 @@
 </head>
 <body>
   <h1>Welcome, Admin!</h1>
-  <p style="color:white; text-shadow: 1px 1px 2px black;">Here you can manage hostel complaints.</p>
+  <p style="color:white; text-shadow: 1px 1px 2px black;">Here you can manage hostel complaints and payments.</p>
 
+  <!-- Complaints Section -->
   <h2>All Complaints</h2>
   <ul id="complaint-list">
     <li>Loading complaints...</li>
   </ul>
 
+  <!-- Payments Section -->
+  <h2>All Fee Payments</h2>
+  <ul id="payment-list">
+    <li>Loading payments...</li>
+  </ul>
+
   <script>
+    // Fetch complaints from backend
     fetch('/complaints')
       .then(response => response.json())
       .then(data => {
@@ -78,17 +86,16 @@
         list.innerHTML = '';
 
         if (data.length === 0) {
-          list.innerHTML = '<li>No complaints yet.</li>';
+          list.innerHTML = '<li>No complaints found.</li>';
           return;
         }
 
         data.forEach(complaint => {
           const li = document.createElement('li');
-          li.setAttribute('data-id', complaint.complaint_id);
           const selectId = `status-${complaint.complaint_id}`;
 
-          li.innerHTML = `
-            <strong>${complaint.username}</strong> — ${complaint.description} <br>
+          li.innerHTML = ` 
+            <strong>${complaint.username}</strong> — ${complaint.description}<br>
             <em>Status:</em> ${complaint.status} &nbsp; | &nbsp;
             <em>Date:</em> ${complaint.date_filed}
             <div class="status-section">
@@ -104,7 +111,7 @@
         });
       })
       .catch(error => {
-        console.error('Error fetching complaints:', error);
+        console.error('Error loading complaints:', error);
         document.getElementById('complaint-list').innerHTML = '<li>Error loading complaints.</li>';
       });
 
@@ -119,17 +126,39 @@
       .then(response => response.json())
       .then(data => {
         alert(data.message);
-
-        if (newStatus === 'Approved') {
-          const item = document.querySelector(`li[data-id='${id}']`);
-          if (item) item.remove(); // Remove from UI
-        }
       })
       .catch(err => {
         alert("Failed to update status.");
         console.error(err);
       });
     }
+
+    // Fetch payment history from backend
+    fetch('/payments')
+      .then(response => response.json())
+      .then(data => {
+        const list = document.getElementById('payment-list');
+        list.innerHTML = '';
+
+        if (data.length === 0) {
+          list.innerHTML = '<li>No payment records found.</li>';
+          return;
+        }
+
+        data.forEach(payment => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <strong>${payment.username}</strong> paid $${payment.amount} <br>
+            <em>Date:</em> ${payment.payment_date}
+          `;
+          list.appendChild(li);
+        });
+      })
+      .catch(error => {
+        console.error('Error loading payments:', error);
+        document.getElementById('payment-list').innerHTML = '<li>Error loading payments.</li>';
+      });
   </script>
+  
 </body>
 </html>

@@ -22,6 +22,7 @@ CREATE TABLE payments (
     FOREIGN KEY (resident_id) REFERENCES residents(resident_id)
 );
 
+
 -- Complaints Table
 CREATE TABLE complaints (
     complaint_id INTEGER PRIMARY KEY,

@@ -134,6 +134,34 @@ def update_complaint_status():
 
     return jsonify({"message": message})
 
+@app.route('/payments', methods=['GET'])
+def view_payments():
+    conn = get_db_connection()
+
+    # Check table schema if needed for debugging
+    columns = conn.execute("PRAGMA table_info(residents)").fetchall()
+    for col in columns:
+        print(col)
+
+    # Query to fetch payments, including residents' name and status (if required)
+    payments = conn.execute('''
+        SELECT 
+            p.payment_id, 
+            r.name AS username, 
+            p.amount, 
+            p.payment_date 
+        FROM payments p
+        JOIN residents r ON p.resident_id = r.resident_id
+    ''').fetchall()
+    
+    conn.close()
+
+    # Convert the results into a list of dictionaries
+    payment_list = [dict(row) for row in payments]
+
+    # Return the payment list as a JSON response
+    return jsonify(payment_list)
+
 # ------------------- Main -------------------
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
